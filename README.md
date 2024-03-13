@@ -1,11 +1,14 @@
 # Algorytmy-optymalizacji
 
-Skład grupy 
+Skład grupy
+-
 -Szymon Tański
 -Krzysztof Szczepański
 -Tadeusz Dworecki
 
-Wybrany problem: VRP/Przepływowy
+Wybrany problem: 
+-
+VRP/Przepływowy
 
 Dodatkiwe utrudnienia:
 -
