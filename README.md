@@ -2,13 +2,13 @@
 
 Skład grupy
 -
--Szymon Tański
--Krzysztof Szczepański
+-Szymon Tański \n
+-Krzysztof Szczepański /n
 -Tadeusz Dworecki
 
 Wybrany problem: 
 -
-VRP/Przepływowy
+VRP
 
-Dodatkiwe utrudnienia:
+Dodatkowe utrudnienia:
 -
