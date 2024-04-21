@@ -1,30 +1,3 @@
-
-"""
-CVRP i DVRP = DCVRP - ograniczenie pojemnosci aut + waga ladunku + maksymalna droga
-Ilość dostępnych identycznych pojazdów - wybieranie z menu
-Ktory punkt jest startowy - wybierane z opcji
-Pojazd na koncu wraca do punktu startowego
-Zbieranie paczek o masach z punktow
-Masa paczek dla kazdego puntku
-Dane pobierane z EXCEL - X,Y, masa w punkcie  /API
-Pokazuje jaki czas brute force
-Algorytm - Tabu search
-Zwraca kolejność dla kazdego pojazdu i dystans
-Ograniczenia masowe dla pojazdu i dystansowe pojazdu wpisywane w menu
-
-
-
-Algorytm - Tabu search - skonsultowac detale 
-GOOGLE OR tools dla porówniania 
-Menu lub kod
-TSP lib
-
-
-opisac problem i heurystyke
-"""
-
-
-
 from math import factorial
 import time
 import pandas as pd
@@ -107,36 +80,34 @@ def ocen_rozwiazanie(rozwiazanie, df, max_ladownosc, max_droga):
     
     return koszt_calkowity
 
-def generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga):
-    liczba_zmian = 2
+def generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga, liczba_zmian=2):
     sasiedztwo = []
     liczba_pojazdow = len(aktualne_rozwiazanie)
     
     for _ in range(liczba_zmian):
         nowe_rozwiazanie = [trasa.copy() for trasa in aktualne_rozwiazanie]
-        pojazd_a, pojazd_b = np.random.choice(range(liczba_pojazdow), 2, replace=False)
         
-        if not nowe_rozwiazanie[pojazd_a] or not nowe_rozwiazanie[pojazd_b]:
+        if liczba_pojazdow > 1:
+            pojazd_a, pojazd_b = np.random.choice(range(liczba_pojazdow), 2, replace=False)
             
-            continue
+            if not nowe_rozwiazanie[pojazd_a] or not nowe_rozwiazanie[pojazd_b]:
+                continue
 
-        punkt_a = np.random.choice(nowe_rozwiazanie[pojazd_a])
-        punkt_b = np.random.choice(nowe_rozwiazanie[pojazd_b])
+            punkt_a = np.random.choice(nowe_rozwiazanie[pojazd_a])
+            punkt_b = np.random.choice(nowe_rozwiazanie[pojazd_b])
 
-        nowe_rozwiazanie[pojazd_a].remove(punkt_a)
-        nowe_rozwiazanie[pojazd_b].remove(punkt_b)
-        nowe_rozwiazanie[pojazd_a].append(punkt_b)
-        nowe_rozwiazanie[pojazd_b].append(punkt_a)
-        
-        if np.random.rand() > 0.5: 
-            pojazd_do_permutacji = pojazd_a if np.random.rand() > 0.5 else pojazd_b
-            if len(nowe_rozwiazanie[pojazd_do_permutacji]) > 1:
-                np.random.shuffle(nowe_rozwiazanie[pojazd_do_permutacji])
+            nowe_rozwiazanie[pojazd_a].remove(punkt_a)
+            nowe_rozwiazanie[pojazd_b].remove(punkt_b)
+            nowe_rozwiazanie[pojazd_a].append(punkt_b)
+            nowe_rozwiazanie[pojazd_b].append(punkt_a)
+        else:
+            # Gdy mamy tylko jeden pojazd, wykonujemy permutację w jego trasie
+            if len(nowe_rozwiazanie[0]) > 1:
+                np.random.shuffle(nowe_rozwiazanie[0])
 
         sasiedztwo.append(nowe_rozwiazanie)
     
     return sasiedztwo
-
 
 def aktualizuj_liste_tabu(lista_tabu, nowy_element, rozmiar_listy_tabu):
     lista_tabu.append(nowy_element)
@@ -167,7 +138,13 @@ def tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar
                 najlepsze_sasiedztwo = kandydat
                 najlepszy_koszt_sasiedztwa = koszt_kandydata
 
+            #print("----------")
+            #print(najlepszy_koszt_sasiedztwa)
+            #print("VS")
+            #print(najlepszy_koszt)
+            #print("----------")
         if najlepszy_koszt_sasiedztwa < najlepszy_koszt:
+            print("Vin")
             najlepsze_rozwiazanie = najlepsze_sasiedztwo
             najlepszy_koszt = najlepszy_koszt_sasiedztwa
             aktualizuj_liste_tabu(lista_tabu, najlepsze_sasiedztwo, rozmiar_listy_tabu)
@@ -184,9 +161,9 @@ def oszacuj_czas_brute_force(liczba_punktow):
 
 punkt_startowy = 0
 liczba_pojazdow = 4
-max_ladownosc = 5
-max_droga = 50
-iteracje = 100
+max_ladownosc = 4
+max_droga = 3000
+iteracje = 1000
 rozmiar_listy_tabu = 100
 
 plik_excel = 'dane.xlsx'
