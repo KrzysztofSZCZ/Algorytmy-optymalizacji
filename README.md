@@ -2,11 +2,12 @@
 
 Skład grupy:
 -
--Szymon Tański 
+Szymon Tański 
 
--Krzysztof Szczepański 
+Krzysztof Szczepański 
 
--Tadeusz Dworecki
+Tadeusz Dworecki
+
 -
 Rezultaty:
 -
@@ -20,8 +21,13 @@ Wcześniejsza wersja
 -
 Wybrany problem: 
 -
-VRP - algorytm Tabu search
+VRP 
+
+Algorytm:
 -
+Tabu search
+
 Dodatkowe utrudnienia:
+-
 - CVRP i DVRP = DCVRP
 - Ograniczenie pojemnosci aut + waga ladunku + maksymalna droga
