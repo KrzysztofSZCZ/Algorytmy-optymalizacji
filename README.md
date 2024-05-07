@@ -1,10 +1,13 @@
 # Algorytmy-optymalizacji
 
-Skład grupy
+Skład grupy:
 -
 -Szymon Tański \n
 -Krzysztof Szczepański \n
 -Tadeusz Dworecki
+
+Rezultaty:
+
 Obecna wersja
 ![4867](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/d5558082-b78e-4631-8686-bfede36e2e2d)
 ![5268](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/3ac98e2e-5f89-4bbc-bb4c-c83d6279dd49)
@@ -18,4 +21,5 @@ Wybrany problem:
 VRP
 
 Dodatkowe utrudnienia:
--
+- CVRP i DVRP = DCVRP
+- Ograniczenie pojemnosci aut + waga ladunku + maksymalna droga
