@@ -31,3 +31,7 @@ Dodatkowe utrudnienia:
 -
 - CVRP i DVRP = DCVRP
 - Ograniczenie pojemnosci aut + waga ladunku + maksymalna droga
+
+Sprawozdanie:
+-
+https://www.overleaf.com/3191769288skjfvvpjfrss##0cbebb
