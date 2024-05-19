@@ -5,6 +5,138 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+def generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga, aktualny_koszt):
+    """Generuje listę sąsiednich rozwiązań poprzez zamianę dwóch dowolnych punktów oraz lokalną optymalizację 2-opt i 3-opt."""
+    sasiedztwo = []
+    liczba_pojazdow = len(aktualne_rozwiazanie)
+    
+    # Zamiana punktów między trasami
+    for _ in range(20):  # Zwiększenie liczby sąsiednich rozwiązań
+        rozwiazanie_kopia = [trasa[:] for trasa in aktualne_rozwiazanie if isinstance(trasa, list) and len(trasa) > 0]
+        if len(rozwiazanie_kopia) < 2:
+            continue  # Przerywamy iterację, jeśli mniej niż dwie trasy są odpowiednie do zamiany
+
+        pojazd1, pojazd2 = random.sample(range(len(rozwiazanie_kopia)), 2)
+        trasa1, trasa2 = rozwiazanie_kopia[pojazd1], rozwiazanie_kopia[pojazd2]
+
+        index1, index2 = random.randint(0, len(trasa1) - 1), random.randint(0, len(trasa2) - 1)
+        # Zamiana punktów
+        trasa1[index1], trasa2[index2] = trasa2[index2], trasa1[index1]
+        
+        sasiedztwo.append(rozwiazanie_kopia)
+
+    # Zamiana punktów wewnątrz tras
+    for trasa in aktualne_rozwiazanie:
+        if len(trasa) < 2:
+            continue
+        for _ in range(10):  # Dodanie kilku zamian wewnątrz tras
+            rozwiazanie_kopia = [t[:] for t in aktualne_rozwiazanie]
+            trasa_kopia = trasa[:]
+            i, j = random.sample(range(len(trasa_kopia)), 2)
+            trasa_kopia[i], trasa_kopia[j] = trasa_kopia[j], trasa_kopia[i]
+            rozwiazanie_kopia[aktualne_rozwiazanie.index(trasa)] = trasa_kopia
+            sasiedztwo.append(rozwiazanie_kopia)
+
+    # Lokalna optymalizacja 2-opt i 3-opt dla każdej trasy w każdym rozwiązaniu
+    for rozwiazanie in aktualne_rozwiazanie:
+        for idx, trasa in enumerate(rozwiazanie):
+            if isinstance(trasa, list) and len(trasa) > 2:
+                nowa_trasa = optimize_2opt(trasa[:], df)
+                nowe_rozwiazanie = [tr[:] for tr in aktualne_rozwiazanie]
+                nowe_rozwiazanie[idx] = nowa_trasa
+                sasiedztwo.append(nowe_rozwiazanie)
+                
+                # Dodanie 3-opt
+                if len(trasa) > 3:
+                    nowa_trasa_3opt = optimize_3opt(trasa[:], df)
+                    nowe_rozwiazanie_3opt = [tr[:] for tr in aktualne_rozwiazanie]
+                    nowe_rozwiazanie_3opt[idx] = nowa_trasa_3opt
+                    sasiedztwo.append(nowe_rozwiazanie_3opt)
+
+    return sasiedztwo
+
+def optimize_2opt(route, df):
+    """Optymalizacja 2-opt dla jednej trasy."""
+    best_route = route
+    best_distance = calculate_distance(route, df)
+    improved = True
+
+    while improved:
+        improved = False
+        for i in range(1, len(route) - 1):
+            for j in range(i + 1, len(route)):
+                new_route = route[:i] + route[i:j][::-1] + route[j:]
+                new_distance = calculate_distance(new_route, df)
+                if new_distance < best_distance:
+                    best_route = new_route
+                    best_distance = new_distance
+                    improved = True
+        route = best_route
+
+    return best_route
+
+def optimize_3opt(route, df):
+    """Optymalizacja 3-opt dla jednej trasy."""
+    best_route = route
+    best_distance = calculate_distance(route, df)
+    improved = True
+
+    while improved:
+        improved = False
+        for i in range(1, len(route) - 2):
+            for j in range(i + 1, len(route) - 1):
+                for k in range(j + 1, len(route)):
+                    new_routes = [
+                        route[:i] + route[i:j][::-1] + route[j:k][::-1] + route[k:],
+                        route[:i] + route[j:k] + route[i:j] + route[k:],
+                        route[:i] + route[j:k][::-1] + route[i:j][::-1] + route[k:],
+                    ]
+                    for new_route in new_routes:
+                        new_distance = calculate_distance(new_route, df)
+                        if new_distance < best_distance:
+                            best_route = new_route
+                            best_distance = new_distance
+                            improved = True
+        route = best_route
+
+    return best_route
+
+def sprawdz_ograniczenia(rozwiazanie, df, max_ladownosc, max_droga):
+    przekroczenie_ladownosci = False
+    przekroczenie_dystansu = False
+
+    for trasa in rozwiazanie:
+        dystans_trasy = 0
+        ladownosc_trasy = 0
+        
+        for i in range(len(trasa)):
+            if i == 0:
+                dystans_trasy += np.sqrt((df.iloc[trasa[i]]['X'] - df.iloc[0]['X'])**2 + (df.iloc[trasa[i]]['Y'] - df.iloc[0]['Y'])**2)
+            else:
+                dystans_trasy += np.sqrt((df.iloc[trasa[i]]['X'] - df.iloc[trasa[i-1]]['X'])**2 + (df.iloc[trasa[i]]['Y'] - df.iloc[trasa[i-1]]['Y'])**2)
+            
+            ladownosc_trasy += df.iloc[trasa[i]]['masa']
+        
+        dystans_trasy += np.sqrt((df.iloc[trasa[-1]]['X'] - df.iloc[0]['X'])**2 + (df.iloc[trasa[-1]]['Y'] - df.iloc[0]['Y'])**2)
+        
+        if ladownosc_trasy > max_ladownosc:
+            przekroczenie_ladownosci = True
+        
+        if dystans_trasy > max_droga:
+            przekroczenie_dystansu = True
+
+    return przekroczenie_ladownosci, przekroczenie_dystansu
+
+def calculate_distance(route, df):
+    """Oblicza całkowity dystans dla danej trasy."""
+    distance = 0
+    # Oblicz dystans pomiędzy kolejnymi punktami
+    for i in range(1, len(route)):
+        distance += np.sqrt((df.iloc[route[i]]['X'] - df.iloc[route[i-1]]['X'])**2 + (df.iloc[route[i]]['Y'] - df.iloc[route[i-1]]['Y'])**2)
+    # Dodaj dystans powrotu do punktu startowego
+    distance += np.sqrt((df.iloc[route[-1]]['X'] - df.iloc[route[0]]['X'])**2 + (df.iloc[route[-1]]['Y'] - df.iloc[route[0]]['Y'])**2)
+    return distance
+
 def rysuj_trasy(df, rozwiazanie, koszt, show=False):
     fig, ax = plt.subplots()
 
@@ -38,6 +170,8 @@ def rysuj_trasy(df, rozwiazanie, koszt, show=False):
     # Opcjonalne wyświetlanie wykresu
     if show:
         plt.show()
+    else:
+        plt.close(fig)
 
     return fig
 
@@ -46,13 +180,11 @@ def generuj_poczatkowe_rozwiazanie(df, liczba_pojazdow, max_ladownosc):
     ladownosci_pojazdow = [0] * liczba_pojazdow
     do_odwiedzenia = set(df.index[1:])  # Zakładamy, że punkt 0 to baza
 
-    # Startujemy każdy pojazd w bazie
-    for aktualny_pojazd in range(liczba_pojazdow):
-        if not do_odwiedzenia:
-            break
-        obecny_punkt = 0  # Start z bazy
-        while do_odwiedzenia:
-            # Wybór najbliższego sąsiada, który nie przekracza maksymalnej ładowności
+    while do_odwiedzenia:
+        for aktualny_pojazd in range(liczba_pojazdow):
+            if not do_odwiedzenia:
+                break
+            obecny_punkt = 0 if not rozwiazanie[aktualny_pojazd] else rozwiazanie[aktualny_pojazd][-1]
             najblizszy = None
             min_dystans = float('inf')
             for punkt in do_odwiedzenia:
@@ -62,13 +194,11 @@ def generuj_poczatkowe_rozwiazanie(df, liczba_pojazdow, max_ladownosc):
                     najblizszy = punkt
 
             if najblizszy is None:
-                break  # Jeżeli żaden punkt nie spełnia kryteriów, zakończ trasę tego pojazdu
+                continue
 
-            # Dodaj punkt do trasy aktualnego pojazdu
             rozwiazanie[aktualny_pojazd].append(najblizszy)
             ladownosci_pojazdow[aktualny_pojazd] += df.loc[najblizszy, 'masa']
             do_odwiedzenia.remove(najblizszy)
-            obecny_punkt = najblizszy
 
     return rozwiazanie
 
@@ -112,69 +242,22 @@ def ocen_rozwiazanie(rozwiazanie, df, max_ladownosc, max_droga):
     
     return koszt_calkowity
 
-def generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga, liczba_zmian=2):
-    sasiedztwo = []
-    liczba_pojazdow = len(aktualne_rozwiazanie)
-    
-    for _ in range(liczba_zmian):
-        operacja = random.choice(['swap', 'reverse', 'relocate', 'intra_swap', 'intra_reverse'])
-        nowe_rozwiazanie = [trasa.copy() for trasa in aktualne_rozwiazanie]
-
-        if operacja == 'swap' and liczba_pojazdow > 1:
-            pojazd_a, pojazd_b = random.sample(range(liczba_pojazdow), 2)
-            if nowe_rozwiazanie[pojazd_a] and nowe_rozwiazanie[pojazd_b]:
-                punkt_a = random.choice(nowe_rozwiazanie[pojazd_a])
-                punkt_b = random.choice(nowe_rozwiazanie[pojazd_b])
-                nowe_rozwiazanie[pojazd_a].remove(punkt_a)
-                nowe_rozwiazanie[pojazd_b].remove(punkt_b)
-                nowe_rozwiazanie[pojazd_a].append(punkt_b)
-                nowe_rozwiazanie[pojazd_b].append(punkt_a)
-
-        elif operacja == 'reverse' and any(len(trasa) > 1 for trasa in nowe_rozwiazanie):
-            pojazd = random.choice([i for i, trasa in enumerate(nowe_rozwiazanie) if len(trasa) > 1])
-            start_idx, end_idx = sorted(random.sample(range(len(nowe_rozwiazanie[pojazd])), 2))
-            nowe_rozwiazanie[pojazd][start_idx:end_idx] = reversed(nowe_rozwiazanie[pojazd][start_idx:end_idx])
-
-        elif operacja == 'relocate' and liczba_pojazdow > 1:
-            pojazd_a, pojazd_b = random.sample(range(liczba_pojazdow), 2)
-            if nowe_rozwiazanie[pojazd_a]:
-                punkt = random.choice(nowe_rozwiazanie[pojazd_a])
-                if sum(df.loc[p]['masa'] for p in nowe_rozwiazanie[pojazd_b]) + df.loc[punkt, 'masa'] <= max_ladownosc:
-                    nowe_rozwiazanie[pojazd_a].remove(punkt)
-                    nowe_rozwiazanie[pojazd_b].append(punkt)
-
-        elif operacja == 'intra_swap' and any(len(trasa) > 1 for trasa in nowe_rozwiazanie):
-            pojazd = random.choice([i for i, trasa in enumerate(nowe_rozwiazanie) if len(trasa) > 1])
-            idx1, idx2 = random.sample(range(len(nowe_rozwiazanie[pojazd])), 2)
-            nowe_rozwiazanie[pojazd][idx1], nowe_rozwiazanie[pojazd][idx2] = nowe_rozwiazanie[pojazd][idx2], nowe_rozwiazanie[pojazd][idx1]
-
-        elif operacja == 'intra_reverse' and any(len(trasa) > 1 for trasa in nowe_rozwiazanie):
-            pojazd = random.choice([i for i, trasa in enumerate(nowe_rozwiazanie) if len(trasa) > 1])
-            start_idx, end_idx = sorted(random.sample(range(len(nowe_rozwiazanie[pojazd])), 2))
-            nowe_rozwiazanie[pojazd][start_idx:end_idx] = nowe_rozwiazanie[pojazd][start_idx:end_idx][::-1]
-
-        sasiedztwo.append(nowe_rozwiazanie)
-
-    return sasiedztwo
-
 def aktualizuj_liste_tabu(lista_tabu, nowy_element, rozmiar_listy_tabu):
     lista_tabu.append(nowy_element)
     while len(lista_tabu) > rozmiar_listy_tabu:
         lista_tabu.pop(0) 
 
-def tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar_listy_tabu, rysuj_etapy=False):
+def tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar_listy_tabu):
     najlepsze_rozwiazanie = None
     najlepszy_koszt = float('inf')
     lista_tabu = []
     aktualne_rozwiazanie = generuj_poczatkowe_rozwiazanie(df, liczba_pojazdow, max_ladownosc)
     aktualny_koszt = ocen_rozwiazanie(aktualne_rozwiazanie, df, max_ladownosc, max_droga)
-    wykresy = []
-
-    if rysuj_etapy:
-        wykresy.append(rysuj_trasy(df, aktualne_rozwiazanie, aktualny_koszt))
+    brak_poprawy_iteracje = 0
+    maks_brak_poprawy_iteracje = 100
 
     for iteracja in range(iteracje):
-        sasiedztwo = generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga)
+        sasiedztwo = generuj_sasiedztwo(aktualne_rozwiazanie, df, max_ladownosc, max_droga, aktualny_koszt)
         sasiedztwo = [r for r in sasiedztwo if r not in lista_tabu]
         
         najlepsze_sasiedztwo = None
@@ -186,48 +269,83 @@ def tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar
                 najlepsze_sasiedztwo = kandydat
                 najlepszy_koszt_sasiedztwa = koszt_kandydata
 
-        if najlepszy_koszt_sasiedztwa < najlepszy_koszt:
+        if najlepsze_sasiedztwo is not None and najlepszy_koszt_sasiedztwa < najlepszy_koszt:
             najlepsze_rozwiazanie = najlepsze_sasiedztwo
             najlepszy_koszt = najlepszy_koszt_sasiedztwa
+            aktualne_rozwiazanie = najlepsze_sasiedztwo
+            aktualny_koszt = najlepszy_koszt_sasiedztwa
             aktualizuj_liste_tabu(lista_tabu, najlepsze_sasiedztwo, rozmiar_listy_tabu)
-            
-            if rysuj_etapy:
-                wykresy.append(rysuj_trasy(df, najlepsze_rozwiazanie, najlepszy_koszt))  # Tutaj aktualizujemy koszt
+            brak_poprawy_iteracje = 0
+        else:
+            brak_poprawy_iteracje += 1
         
-    return najlepsze_rozwiazanie, wykresy
+        if brak_poprawy_iteracje > maks_brak_poprawy_iteracje:
+            aktualne_rozwiazanie = generuj_poczatkowe_rozwiazanie(df, liczba_pojazdow, max_ladownosc)
+            aktualny_koszt = ocen_rozwiazanie(aktualne_rozwiazanie, df, max_ladownosc, max_droga)
+            brak_poprawy_iteracje = 0
+        
+    przekroczenie_ladownosci, przekroczenie_dystansu = sprawdz_ograniczenia(najlepsze_rozwiazanie, df, max_ladownosc, max_droga)
+    return najlepsze_rozwiazanie, najlepszy_koszt, przekroczenie_ladownosci, przekroczenie_dystansu
 
 def oszacuj_czas_brute_force(liczba_punktow):
     liczba_kombinacji = factorial(liczba_punktow - 1)
     czas_w_sekundach = liczba_kombinacji * 1e-6
     return liczba_kombinacji, czas_w_sekundach
 
+#Ladownosc: 
+#dane - masa 4x4 = 16
+#dane2 - masa 4x3900 trasa 230x4
+#dane3 - masa 47 trasa 4x16000
+
+#DATASET1
 punkt_startowy = 0
 liczba_pojazdow = 4
 max_ladownosc = 4
-max_droga = 3000
-iteracje = 5000
+max_droga = 1600
+iteracje = 100
 rozmiar_listy_tabu = 10
-
 plik_excel = 'dane.xlsx'
-df = pd.read_excel(plik_excel, usecols=['X', 'Y', 'masa'])
-#print(df)
 
+#DATASET 2
+"""punkt_startowy = 0
+liczba_pojazdow = 4
+max_ladownosc = 3900
+max_droga = 230
+iteracje = 10000
+rozmiar_listy_tabu = 50
+plik_excel = 'dane2.xlsx'
+"""
+
+#DATASET 3
+"""punkt_startowy = 0
+liczba_pojazdow = 4
+max_ladownosc = 13
+max_droga = 16000
+iteracje = 10000
+rozmiar_listy_tabu = 100
+plik_excel = 'dane3.xlsx'
+"""
+
+df = pd.read_excel(plik_excel, usecols=['X', 'Y', 'masa'])
 liczba_punktow = len(df)
 liczba_kombinacji, czas_w_sekundach = oszacuj_czas_brute_force(liczba_punktow)
 print(f"Liczba możliwych kombinacji: {liczba_kombinacji}, Oszacowany czas (s): {czas_w_sekundach}")
 
-najlepsze_rozwiazanie, wykresy = tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar_listy_tabu, rysuj_etapy=True)
-
+najlepsze_rozwiazanie, koszt_najlepszego_rozwiazania, przekroczenie_ladownosci, przekroczenie_dystansu = tabu_search(df, liczba_pojazdow, max_ladownosc, max_droga, iteracje, rozmiar_listy_tabu)
 
 if najlepsze_rozwiazanie is not None:
-    koszt_najlepszego_rozwiazania = ocen_rozwiazanie(najlepsze_rozwiazanie, df, max_ladownosc, max_droga)
     print("Najlepsze znalezione rozwiązanie:")
     for nr, trasa in enumerate(najlepsze_rozwiazanie):
-        print(f"Pojazd {nr + 1}: Trasa - {trasa}")
+        full_trasa = [0] + trasa + [0]
+        print(f"Pojazd {nr + 1}: Trasa - {full_trasa}")
     print(f"Całkowity koszt najlepszego rozwiązania: {koszt_najlepszego_rozwiazania}")
+
+    if przekroczenie_ladownosci:
+        print("Przekroczono maksymalną ładowność.")
+    if przekroczenie_dystansu:
+        print("Przekroczono maksymalną długość trasy.")
+        
+    fig = rysuj_trasy(df, najlepsze_rozwiazanie, koszt_najlepszego_rozwiazania, show=True)
 else:
     print("Nie znaleziono żadnego dopuszczalnego rozwiązania.")
 
-for fig in wykresy:
-    plt.figure(fig.number)
-    plt.show()
