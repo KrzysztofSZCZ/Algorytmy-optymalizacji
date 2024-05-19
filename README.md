@@ -24,7 +24,7 @@ Dataset 2 eli30(http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/vrp/):
 
 
 Dataset 3 att48(http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/vrp/):
-- 4 pojazdy, max ładownosc 13, max droga 16000, iteracje 10000
+- 4 pojazdy, max ładownosc 13, max droga 16000, iteracje 5000
 ![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/3283cc84-68f6-44e3-b867-e3162a24790e)
 
 
