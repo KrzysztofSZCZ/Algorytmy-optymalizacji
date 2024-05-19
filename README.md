@@ -17,6 +17,8 @@ Dataset 1 - 4 pojazdy, max ładownosc 1600, max droga 1600, iteracje 100
 
 Dataset 2 - 4 pojazdy, max ładownosc 3900, max droga 230, iteracje 10000
 ![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/2c730049-d3f0-4a4f-8ebd-c3bba018dda2)
+![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/b76c353c-9d06-4e2b-b9c3-841083aa5e2d)
+
 
 
 Dataset 3 - 4 pojazdy, max ładownosc 13, max droga 16000, iteracje 10000
