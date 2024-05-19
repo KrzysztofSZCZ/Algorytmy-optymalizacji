@@ -1,4 +1,4 @@
-v # Algorytmy-optymalizacji
+# Algorytmy-optymalizacji
 
 Skład grupy:
 -
