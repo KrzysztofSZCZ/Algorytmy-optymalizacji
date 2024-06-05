@@ -21,28 +21,38 @@ Dataset 2 eli30(http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/vrp/):
 Pojemność pojazdów: 5000, 5000, 5000, 5000
 Iteracje: 50 000
 Rozmiar listy: 1000
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/ece7fce3-290d-43e4-9415-bce62dbee30a)
+<img alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/f6a57bee-e4fe-46ca-97f2-ac8a51d4852b">
 
 Pojemność pojazdów: 4000, 4000, 4500, 4500
 Iteracje: 50 000
 Rozmiar listy: 1000
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/3982609e-2eae-4360-ad2f-1cdc87ca72f0)
+<img alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/44f49e05-0cf3-42dc-9eb4-30a9d23536d9">
 
 Pojemność pojazdów: 2000,  2000,  7500,  7500
 Iteracje: 50 000
 Rozmiar listy: 1000
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/48b74f12-8d75-4033-b9e5-55f963f31b21)
-
-
--4 pojazdy, max ładownosc 3900, max droga 230, iteracje 10000
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/2c730049-d3f0-4a4f-8ebd-c3bba018dda2)
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/b76c353c-9d06-4e2b-b9c3-841083aa5e2d)
+<img alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/7711e7e3-43f4-4432-8203-bd94cad1098f">
 
 
 
 Dataset 3 att48(http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/vrp/):
-- 4 pojazdy, max ładownosc 13, max droga 16000, iteracje 5000
-![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/3283cc84-68f6-44e3-b867-e3162a24790e)
+
+Pojemność pojazdów: 15,  15,  15,  15
+Iteracje: 50 000
+Rozmiar listy: 1000
+![image](https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/04e1ce53-d623-48e0-9d63-2294949e2c49)
+<img  alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/0935bf98-d8c2-491a-81e1-c12ae53aa7fb">
+
+
+Pojemność pojazdów: 12,  12,  12,  12
+Iteracje: 50 000
+Rozmiar listy: 1000
+<img alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/4d76989e-0bbc-481a-84ef-28afe105ef1a">
+
+Pojemność pojazdów: 8,  8,  16,  16
+Iteracje: 50 000
+Rozmiar listy: 1000
+<img alt="image" src="https://github.com/KrzysztofSZCZ/Algorytmy-optymalizacji/assets/108231030/2b1f7d66-a92e-4d0f-881f-52d734a52084">
 
 
 -
